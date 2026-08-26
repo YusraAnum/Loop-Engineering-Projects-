@@ -1,3 +1,5 @@
+import pytest
+
 from calc_utils import add, is_palindrome, factorial
 
 
@@ -15,4 +17,8 @@ def test_is_palindrome():
 def test_factorial():
     assert factorial(0) == 1
     assert factorial(5) == 120
-    # TODO: add a test case for factorial with negative input
+
+
+def test_factorial_negative_input():
+    with pytest.raises(ValueError):
+        factorial(-1)
