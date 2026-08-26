@@ -9,3 +9,7 @@
 
 
 ## Open / needs a human
+
+### 2026-08-26
+- project7-cost-and-failure/_rehearsal_broken_file.py: could not be read (Permission denied)
+

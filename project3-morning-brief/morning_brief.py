@@ -25,7 +25,10 @@ TODO_RE = re.compile(r"TODO:.*")
 
 
 def find_todos():
+    # skipped: files that raised OSError, so a read failure is reported
+    # instead of silently dropping whatever TODOs that file held.
     items = []
+    skipped = []
     for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
         dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
         for fname in filenames:
@@ -36,17 +39,17 @@ def find_todos():
             fpath = os.path.join(dirpath, fname)
             if os.path.abspath(fpath) == SELF_FILE:
                 continue
+            relpath = os.path.relpath(fpath, REPO_ROOT).replace("\\", "/")
             try:
                 with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
                     for lineno, line in enumerate(f, start=1):
                         if "TODO:" in line:
                             match = TODO_RE.search(line)
                             text = match.group(0).strip() if match else line.strip()
-                            relpath = os.path.relpath(fpath, REPO_ROOT).replace("\\", "/")
                             items.append(f"{relpath}:{lineno}: {text}")
-            except OSError:
-                continue
-    return sorted(items)
+            except OSError as e:
+                skipped.append(f"{relpath}: could not be read ({e.strerror or e})")
+    return sorted(items), skipped
 
 
 def read_done_section(progress_text):
@@ -84,26 +87,67 @@ def append_to_done(progress_text, today, new_items):
     return "\n".join(new_lines) + "\n"
 
 
+def append_to_needs_human(progress_text, today, notes):
+    lines = progress_text.splitlines()
+    idx = next(
+        (i for i, l in enumerate(lines) if l.strip() == "## Open / needs a human"),
+        None,
+    )
+    if idx is None:
+        raise ValueError("progress.md is missing an '## Open / needs a human' section")
+
+    end_idx = len(lines)
+    for i in range(idx + 1, len(lines)):
+        if lines[i].strip().startswith("## "):
+            end_idx = i
+            break
+
+    while end_idx > idx + 1 and lines[end_idx - 1].strip() == "":
+        end_idx -= 1
+
+    block = ["", f"### {today}"] + [f"- {note}" for note in notes]
+    new_lines = lines[:end_idx] + block + [""] + lines[end_idx:]
+    return "\n".join(new_lines) + "\n"
+
+
 def main():
     with open(PROGRESS_FILE, "r", encoding="utf-8") as f:
         progress_text = f.read()
 
     recorded = read_done_section(progress_text)
-    found = find_todos()
+    found, skipped = find_todos()
     new_items = [item for item in found if item not in recorded]
-
-    if not new_items:
-        print("nothing new since last run ✓")
-        return
-
-    print(f"New items found ({len(new_items)}):")
-    for item in new_items[:5]:
-        print(f"- {item}")
-
     today = datetime.date.today().isoformat()
-    updated = append_to_done(progress_text, today, new_items)
-    with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
-        f.write(updated)
+    updated = progress_text
+
+    if new_items:
+        print(f"New items found ({len(new_items)}):")
+        for item in new_items[:5]:
+            print(f"- {item}")
+        try:
+            updated = append_to_done(updated, today, new_items)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("nothing new since last run ✓")
+
+    if skipped:
+        print(f"WARNING: {len(skipped)} file(s) could not be scanned:", file=sys.stderr)
+        for note in skipped:
+            print(f"  - {note}", file=sys.stderr)
+        try:
+            updated = append_to_needs_human(updated, today, skipped)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    if updated != progress_text:
+        with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
+            f.write(updated)
+
+    if skipped:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
