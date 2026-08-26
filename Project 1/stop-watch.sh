@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(cd "$(dirname "$0")" && pwd)"
 # TODO: also stop the polling watcher task itself here, not just long-task.sh
 # Kills the background long-task.sh job if it's still running.
 # The polling watcher itself is a harness-tracked task and is stopped
