@@ -1,3 +1,5 @@
+import math
+
 import pytest
 
 from calc_utils import add, is_palindrome, factorial
@@ -32,3 +34,11 @@ def test_factorial():
 def test_factorial_negative_input():
     with pytest.raises(ValueError):
         factorial(-1)
+
+
+def test_factorial_large_n_does_not_hit_recursion_limit():
+    # factorial(2000) exceeds Python's default recursion limit (1000) if
+    # implemented via naive recursion; it must still return the correct
+    # value without raising RecursionError.
+    result = factorial(2000)
+    assert result == math.factorial(2000)
