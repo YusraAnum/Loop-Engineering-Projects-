@@ -33,6 +33,9 @@ From the repo root, against `requirements.txt`:
   `pip-audit -r requirements.txt` for known CVEs. If `pip-audit` cannot
   be installed or run (no network, etc.), say so explicitly in the
   report — do not silently skip the vulnerability check.
+- Also check for a legacy `requirements-dev.txt` at the repo root (from
+  before this repo consolidated to a single `requirements.txt`) and
+  audit it the same way if present.
 
 Draft findings as plain bullets: package, current version, available
 version (if outdated), CVE id and severity (if vulnerable).
