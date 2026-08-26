@@ -21,7 +21,7 @@ EXCLUDE_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules"}
 INCLUDE_EXT = {".py", ".js", ".ts", ".sh", ".md"}
 SKIP_FILES = {"progress.md"}
 
-TODO_RE = re.compile(r"TODO.*")
+TODO_RE = re.compile(r"TODO:.*")
 
 
 def find_todos():
@@ -39,7 +39,7 @@ def find_todos():
             try:
                 with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
                     for lineno, line in enumerate(f, start=1):
-                        if "TODO" in line:
+                        if "TODO:" in line:
                             match = TODO_RE.search(line)
                             text = match.group(0).strip() if match else line.strip()
                             relpath = os.path.relpath(fpath, REPO_ROOT).replace("\\", "/")

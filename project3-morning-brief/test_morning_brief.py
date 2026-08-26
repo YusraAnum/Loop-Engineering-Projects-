@@ -1,7 +1,20 @@
-"""Tests for morning_brief.append_to_done()."""
+"""Tests for morning_brief.append_to_done() and the TODO_RE scanner."""
 import pytest
 
-from morning_brief import append_to_done
+from morning_brief import TODO_RE, append_to_done
+
+# Built via concatenation so this fixture text isn't itself picked up
+# as a real todo when morning_brief.py scans the repo.
+REAL_TODO_LINE = "# " + "TODO" + ": fix this edge case"
+
+
+def test_matches_real_todo_comment():
+    assert TODO_RE.search(REAL_TODO_LINE)
+
+
+def test_ignores_prose_mentioning_todo():
+    line = "- Check whether the bug is already described anywhere (e.g. a `TODO` comment)"
+    assert TODO_RE.search(line) is None
 
 
 def test_append_to_done_with_done_section_present():
