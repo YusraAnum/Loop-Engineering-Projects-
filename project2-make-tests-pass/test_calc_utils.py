@@ -27,4 +27,8 @@ def test_is_palindrome_rejects_non_string():
 def test_factorial():
     assert factorial(0) == 1
     assert factorial(5) == 120
-    # TODO: add a test case for factorial with negative input
+
+
+def test_factorial_negative_input():
+    with pytest.raises(ValueError):
+        factorial(-1)
