@@ -1,3 +1,5 @@
+import pytest
+
 from calc_utils import add, is_palindrome, factorial
 
 
@@ -10,6 +12,11 @@ def test_is_palindrome():
     assert is_palindrome("racecar") is True
     assert is_palindrome("A man a plan a canal Panama") is True
     assert is_palindrome("hello") is False
+
+
+def test_is_palindrome_rejects_non_string():
+    with pytest.raises(TypeError):
+        is_palindrome(12321)
 
 
 def test_factorial():
