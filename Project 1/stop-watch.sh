@@ -1,5 +1,4 @@
 #!/bin/bash
-# TODO: also stop the polling watcher task itself here, not just long-task.sh
 # Kills the background long-task.sh job if it's still running.
 # The polling watcher itself is a harness-tracked task and is stopped
 # separately via TaskStop, not by this script.
