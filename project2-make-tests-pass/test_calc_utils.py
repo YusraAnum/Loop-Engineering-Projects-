@@ -15,8 +15,13 @@ def test_is_palindrome():
 
 
 def test_is_palindrome_rejects_non_string():
-    with pytest.raises(TypeError):
-        is_palindrome(12321)
+    # A list (not a bare int) is used here: pre-fix, an int already raised
+    # TypeError ('int' object is not iterable) for an unrelated reason, so it
+    # couldn't distinguish old buggy behavior from the fix. A list of ints
+    # iterates fine but fails differently (AttributeError on ch.isalnum())
+    # pre-fix, so this genuinely fails before the fix and passes after it.
+    with pytest.raises(TypeError, match="is_palindrome expects a string"):
+        is_palindrome([1, 2, 3])
 
 
 def test_factorial():
