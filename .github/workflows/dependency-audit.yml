@@ -1,0 +1,45 @@
+name: Dependency Audit (Project 8 capstone loop)
+
+# Heartbeat: fires on its own, no clock-watching required. Daily so the
+# unattended-for-a-week proof actually has ~7 firings to point at.
+# workflow_dispatch lets a human fire one manually to test the loop
+# without waiting for the schedule.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+# Budget guard: never let two beats overlap or pile up a backlog if one
+# runs long — the next scheduled beat replaces a still-running one
+# instead of queuing behind it.
+concurrency:
+  group: dependency-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    # Budget guard: a stuck beat is killed instead of burning the whole day.
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: >
+            Use the dependency-audit skill (invoke it via the Skill tool
+            with skill name "dependency-audit") to run this repo's
+            scheduled dependency audit.
+          claude_args: |
+            --max-turns 12
+            --allowedTools "Skill,Bash,Read,Write,Edit,Grep,Glob"
