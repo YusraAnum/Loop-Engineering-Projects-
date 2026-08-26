@@ -1,0 +1,44 @@
+name: PR Review Doorbell
+
+# Event-driven, no schedule and no clock: this workflow does nothing until
+# GitHub tells it a pull request against this repo was opened (or updated).
+# It then runs on a GitHub-hosted runner, not on any machine of ours.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--allowedTools "Bash(git diff:*),Bash(git log:*),Bash(gh pr comment:*),Read,Grep,Glob"'
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in
+            ${{ github.repository }}.
+
+            1. Run `git diff origin/${{ github.event.pull_request.base.ref }}...HEAD`
+               to see exactly what this PR changes.
+            2. Read any changed files you need for context (Read/Grep/Glob).
+            3. Write a concise review: correctness issues first (with file/line
+               references), then simplification or style notes. If you find
+               nothing worth flagging, say so briefly instead of inventing
+               nitpicks.
+            4. Post that review as a single comment on this PR:
+               gh pr comment ${{ github.event.pull_request.number }} --body "<review text>"
+
+            Do not push commits, edit files, or open any other PR. Only post
+            the one review comment.
