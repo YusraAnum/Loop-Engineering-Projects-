@@ -64,7 +64,11 @@ def read_done_section(progress_text):
 
 def append_to_done(progress_text, today, new_items):
     lines = progress_text.splitlines()
-    done_idx = next(i for i, l in enumerate(lines) if l.strip() == "## Done")
+    done_idx = next(
+        (i for i, l in enumerate(lines) if l.strip() == "## Done"), None
+    )
+    if done_idx is None:
+        raise ValueError("progress.md is missing a '## Done' section")
 
     end_idx = len(lines)
     for i in range(done_idx + 1, len(lines)):
