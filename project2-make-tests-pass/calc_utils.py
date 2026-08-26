@@ -2,8 +2,9 @@ def add(a, b):
     return a + b
 
 
-# TODO: is_palindrome does not validate that s is actually a string
 def is_palindrome(s):
+    if not isinstance(s, str):
+        raise TypeError("is_palindrome expects a string")
     s = "".join(ch.lower() for ch in s if ch.isalnum())
     return s == s[::-1]
 
