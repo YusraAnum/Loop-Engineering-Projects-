@@ -1,4 +1,0 @@
-# Test-suite dependency shared by project2-make-tests-pass and
-# project3-morning-brief. Pinned so project8's dependency-audit loop has a
-# real, genuine target instead of nothing to check.
-pytest==9.1.1

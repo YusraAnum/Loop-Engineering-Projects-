@@ -1,6 +1,0 @@
-=== 2026-08-26T08:20:50Z — deliberate overnight-failure rehearsal ===
-$ python morning_brief.py
-WARNING: 1 file(s) could not be scanned:
-  - project7-cost-and-failure/_rehearsal_broken_file.py: could not be read (Permission denied)
-nothing new since last run ✓
-exit code: 1

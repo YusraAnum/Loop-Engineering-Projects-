@@ -1,0 +1,41 @@
+name: Dreaming Loop (Project 12 capstone)
+
+# Heartbeat (Concept 6): weekly, no clock-watching. This loop doesn't do
+# the chore - it watches project8's dependency-audit loop and proposes
+# improvements to it, as a PR, never a direct commit.
+on:
+  schedule:
+    - cron: "0 10 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: dreaming-loop
+  cancel-in-progress: false
+
+jobs:
+  dream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: >
+            Use the dreaming-loop skill (invoke it via the Skill tool
+            with skill name "dreaming-loop") to run this week's
+            improvement-loop check over project8's dependency-audit
+            loop.
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Skill,Bash,Read,Write,Edit,Grep,Glob"
